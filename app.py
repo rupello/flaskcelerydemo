@@ -1,4 +1,6 @@
 import os
+import time
+from random import randint
 from celery import Celery
 from flask import Flask, request
 from celery.utils.log import get_task_logger
@@ -14,9 +16,8 @@ celery.config_from_envvar('CELERY_CONFIG_MODULE')
 @celery.task(autoretry_for=(Exception,), max_retries=3)
 def add(x, y):
     logger.info('Adding {0} + {1}'.format(x, y))
+    time.sleep(randint(1,5))
     return x + y
-
-
 
 app = Flask(__name__)
 
@@ -25,5 +26,5 @@ def addit():
     x = request.args.get('x')
     y = request.args.get('y')
     task = add.delay(x, y)
-    return task.status
+    return f"add task created with id:{task.id} state:{task.state}"
 
